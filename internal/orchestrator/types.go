@@ -7,3 +7,8 @@ type ChatRequest struct {
 type ChatResponse struct {
 	Reply string `json:"reply"`
 }
+
+type LLMRequest struct {
+	Message string   `json:"message"`
+	Context []string `json:"context,omitempty"`
+}

@@ -19,9 +19,9 @@ func main() {
 		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 	)
 
-	rag := services.NoopRAG{}
-	tools := services.NoopTools{}
-	llm := services.NoopLLM{}
+	rag := services.NewMemoryRAG(logger, nil)
+	tools := services.NewNoopTools(logger)
+	llm := services.NewStubLLM(logger)
 	orch := orchestrator.New(rag, tools, llm, logger)
 
 	mux := httpapi.NewMux(orch, logger)

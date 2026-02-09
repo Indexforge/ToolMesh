@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"toolmesh/internal/domain"
@@ -31,7 +32,25 @@ func (o *Orchestrator) HandleChat(ctx context.Context, req ChatRequest) (ChatRes
 	logger := o.logger.With("module", "orchestrator")
 	logger.InfoContext(ctx, "handle chat request")
 
-	resp, err := o.llm.Generate(ctx, req)
+	var contextDocs []string
+	if o.rag != nil {
+		docs, err := o.rag.Search(ctx, req.Message, 3)
+		if err != nil {
+			if !errors.Is(err, domain.ErrNoContextFound) {
+				logger.ErrorContext(ctx, "rag search failed", "error", err)
+				return ChatResponse{}, err
+			}
+			logger.InfoContext(ctx, "rag returned no context")
+		} else {
+			contextDocs = docs
+			logger.InfoContext(ctx, "rag context selected", "doc_count", len(docs))
+		}
+	}
+
+	resp, err := o.llm.Generate(ctx, LLMRequest{
+		Message: req.Message,
+		Context: contextDocs,
+	})
 	if err != nil {
 		logger.ErrorContext(ctx, "llm generation failed", "error", err)
 		return ChatResponse{}, err

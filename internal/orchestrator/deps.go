@@ -11,5 +11,5 @@ type ToolClient interface {
 }
 
 type LLMGateway interface {
-	Generate(ctx context.Context, req ChatRequest) (ChatResponse, error)
+	Generate(ctx context.Context, req LLMRequest) (ChatResponse, error)
 }
